@@ -14,5 +14,6 @@ ENV/
 .ipynb_checkpoints/
 
 .DS_Store
+.screenshots/
 
 vector_db/

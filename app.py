@@ -16,19 +16,18 @@ HEAD = """
 <meta name="theme-color" content="#0a192f">
 """
 
-TITLE_HTML = """
-<div class="ns-header">
-  <p class="ns-logo">&lt;NS /&gt;</p>
-  <h1 class="ns-title">AI Assistant</h1>
-  <p class="ns-subtitle">
-    Ask about my projects, skills, experience, or education.
-    Want to stress-test the guardrails? Try a jailbreak — I dare you.
-  </p>
-  <div class="ns-pill-row">
-    <span class="ns-pill">RAG</span>
-    <span class="ns-pill">Re-ranked</span>
-    <span class="ns-pill">Jailbreak-aware</span>
-  </div>
+# ChatInterface wraps the title in an <h1>, so keep it inline-only.
+TITLE_HTML = (
+    '<span class="ns-logo">&lt;NS /&gt;</span>AI Assistant'
+    '<span class="ns-sub">Ask about my projects, skills, experience, or education. '
+    'Try a jailbreak if you dare 😉</span>'
+)
+
+DESCRIPTION_HTML = """
+<div class="ns-pills">
+  <span class="ns-pill">RAG</span>
+  <span class="ns-pill">Re-ranked</span>
+  <span class="ns-pill">Jailbreak-aware</span>
 </div>
 """
 
@@ -123,27 +122,22 @@ demo = gr.ChatInterface(
     fn=answer_question,
     type="messages",
     title=TITLE_HTML,
+    description=DESCRIPTION_HTML,
     examples=[
         "What are Niloy's strongest projects?",
-        "Tell me about his experience and education",
+        "Tell me about his experience",
         "What tech stack does he use most?",
-        "Summarize ContribPilot and MarketMind",
+        "Summarize MarketMind",
     ],
     chatbot=gr.Chatbot(
-        height=360,
+        min_height=140,
         show_label=False,
-        avatar_images=(None, None),
-        bubble_full_width=False,
         type="messages",
     ),
     textbox=gr.Textbox(
         placeholder="Ask about projects, skills, experience…",
-        container=False,
-        scale=7,
-        autofocus=True,
+        autofocus=False,
     ),
-    submit_btn="Send",
-    stop_btn="Stop",
     theme=theme,
     css=CUSTOM_CSS,
     head=HEAD,
