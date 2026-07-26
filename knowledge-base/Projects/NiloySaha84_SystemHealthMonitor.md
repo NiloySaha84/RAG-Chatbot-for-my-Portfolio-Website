@@ -35,5 +35,3 @@ The system health data is saved in a JSON file (systemMonitor.json). Each entry 
  ## License
 
  This project is licensed under the **MIT License**.
-
- 

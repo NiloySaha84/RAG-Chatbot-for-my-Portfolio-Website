@@ -31,4 +31,4 @@ This project builds a **machine learning system to detect fraudulent credit card
 ## Results
 - **Random Forest Classifier:** ROC-AUC > 0.99  
 - **Gradient Boosting Classifier:** ROC-AUC > 0.99  
-- The models successfully identify fraudulent transactions with **high accuracy and recall**, even with imbalanced data.  
+- The models successfully identify fraudulent transactions with **high accuracy and recall**, even with imbalanced data.

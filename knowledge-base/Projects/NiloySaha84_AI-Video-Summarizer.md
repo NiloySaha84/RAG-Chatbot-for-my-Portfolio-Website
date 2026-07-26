@@ -13,4 +13,3 @@ An AI-powered video summarization tool that automatically generates concise text
 - **Machine Learning**: TensorFlow, Keras, Transformers
 - **Video Processing**: FFmpeg, YoutubeDL (for youtube videos)
 - **Frontend**: HTML, CSS
-

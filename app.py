@@ -10,8 +10,9 @@ app = FastAPI(title="Niloy Portfolio Chatbot")
 demo = gr.ChatInterface(
     fn=answer_question,
     title="Niloy Saha Portfolio Chatbot",
-    description="Ask questions about Niloy's projects, education, experience, and skills.",
+    description="Hey! Want a quick tour of my projects or skills? Just ask. Try jailbreaking me if you can!😉",
 )
+demo.queue()
 
 app = gr.mount_gradio_app(app, demo, path="/gradio")
 
@@ -27,4 +28,7 @@ def health():
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    import os
+
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)

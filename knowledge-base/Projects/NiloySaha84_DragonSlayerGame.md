@@ -1,5 +1,6 @@
 # DragonSlayer
 
+## Live Demo: https://niloy-saha84-github-io.vercel.app/dragonSlayer.mp4
 
 ## Overview
 
@@ -46,5 +47,3 @@ This is a C++ game simulation using **SFML** (Simple and Fast Multimedia Library
    g++ dragon_slayer.cpp -std=c++20 -lsfml-graphics -lsfml-window -lsfml-system -o dragonSlayer
     install_name_tool -add_rpath "/usr/local/lib/" dragonSlayer
    ./dragonSlayer
-
-
