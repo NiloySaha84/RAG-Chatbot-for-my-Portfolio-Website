@@ -18,6 +18,7 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
  && python -c "from flashrank import Ranker; Ranker()"
 
 COPY app.py chatbot_engine.py ./
+COPY static/ static/
 COPY knowledge-base/ knowledge-base/
 COPY chroma_db/ chroma_db/
 

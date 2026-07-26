@@ -1,0 +1,394 @@
+/* Niloy Saha portfolio theme — matches https://niloy-saha84-github-io.vercel.app/ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root,
+.gradio-container,
+.dark {
+  --bg-primary: #0a192f;
+  --bg-secondary: #112240;
+  --bg-tertiary: #1d3461;
+  --text-primary: #ccd6f6;
+  --text-secondary: #8892b0;
+  --accent: #64ffda;
+  --accent-tint: rgba(100, 255, 218, 0.1);
+  --white: #e6f1ff;
+  --navy-shadow: rgba(2, 12, 27, 0.7);
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+  --radius: 8px;
+  --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+html,
+body,
+.gradio-container {
+  background: var(--bg-primary) !important;
+  color: var(--text-secondary) !important;
+  font-family: var(--font-sans) !important;
+  min-height: 100%;
+}
+
+.gradio-container {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Subtle grid + glow like the portfolio hero */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(100, 255, 218, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 255, 218, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black 35%, transparent 100%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: var(--accent);
+  filter: blur(120px);
+  opacity: 0.08;
+  top: -80px;
+  right: -60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gradio-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hide Gradio chrome that fights the embed */
+footer,
+.footer,
+.svelte-1ipelgc,
+button.icon-button[aria-label="Settings"],
+button.icon-button[aria-label="API"] {
+  display: none !important;
+}
+
+/* Header */
+.ns-header {
+  padding: 1rem 1.1rem 0.75rem;
+  border-bottom: 1px solid rgba(100, 255, 218, 0.12);
+  background: linear-gradient(180deg, rgba(17, 34, 64, 0.95), rgba(10, 25, 47, 0.4));
+}
+
+.ns-logo {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 0 0 0.45rem;
+}
+
+.ns-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.ns-subtitle {
+  margin: 0.4rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.ns-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.ns-pill {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--accent);
+  background: var(--accent-tint);
+  border: 1px solid rgba(100, 255, 218, 0.25);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  letter-spacing: 0.3px;
+}
+
+/* Main chat panel */
+#chatbot,
+.chatbot,
+.bubble-wrap {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.messages-wrapper,
+.chat-wrapper,
+.fillable {
+  background: transparent !important;
+}
+
+/* Message bubbles */
+.message,
+.bubble-message,
+.message-row {
+  font-family: var(--font-sans) !important;
+}
+
+.bot,
+.message.bot,
+.message-row.bot .message,
+.message-row.bot .bubble-message {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(100, 255, 218, 0.12) !important;
+  border-radius: 12px 12px 12px 4px !important;
+  box-shadow: 0 8px 24px -12px var(--navy-shadow) !important;
+}
+
+.user,
+.message.user,
+.message-row.user .message,
+.message-row.user .bubble-message {
+  background: rgba(100, 255, 218, 0.12) !important;
+  color: var(--white) !important;
+  border: 1px solid rgba(100, 255, 218, 0.35) !important;
+  border-radius: 12px 12px 4px 12px !important;
+}
+
+.message p,
+.bot p,
+.user p,
+.message-content,
+.prose,
+.prose * {
+  color: inherit !important;
+  font-size: 0.9rem !important;
+  line-height: 1.65 !important;
+}
+
+.prose a {
+  color: var(--accent) !important;
+}
+
+.prose code,
+.message code {
+  font-family: var(--font-mono) !important;
+  background: rgba(100, 255, 218, 0.08) !important;
+  color: var(--accent) !important;
+  border-radius: 4px !important;
+  padding: 0.1rem 0.35rem !important;
+}
+
+.prose pre {
+  background: #020c1b !important;
+  border: 1px solid var(--bg-tertiary) !important;
+  border-radius: var(--radius) !important;
+}
+
+/* Avatars / role labels */
+.avatar-container,
+.role,
+.role-name {
+  color: var(--accent) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.7rem !important;
+}
+
+/* Input area */
+.input-container,
+form,
+.pending {
+  background: transparent !important;
+}
+
+textarea,
+input[type="text"],
+.scroll-hide textarea,
+#component-textbox textarea,
+.wrap textarea {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--bg-tertiary) !important;
+  border-radius: var(--radius) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.9rem !important;
+  box-shadow: none !important;
+  transition: var(--transition) !important;
+}
+
+textarea:focus,
+input[type="text"]:focus,
+.scroll-hide textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-tint) !important;
+  outline: none !important;
+}
+
+textarea::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.85;
+}
+
+/* Buttons — outlined accent like portfolio .btn-primary */
+button.primary,
+button.submit-button,
+.send-button,
+button[variant="primary"] {
+  background: transparent !important;
+  color: var(--accent) !important;
+  border: 1.5px solid var(--accent) !important;
+  border-radius: 4px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.4px !important;
+  box-shadow: none !important;
+  transition: var(--transition) !important;
+}
+
+button.primary:hover,
+button.submit-button:hover,
+.send-button:hover {
+  background: var(--accent-tint) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(100, 255, 218, 0.15) !important;
+}
+
+button.secondary,
+button.stop-button,
+.clear-button,
+button[variant="secondary"] {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid var(--text-secondary) !important;
+  border-radius: 4px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem !important;
+  transition: var(--transition) !important;
+}
+
+button.secondary:hover,
+.clear-button:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  background: var(--accent-tint) !important;
+}
+
+/* Example chips */
+.examples,
+.example,
+button.example,
+.samples table,
+.samples button {
+  background: transparent !important;
+}
+
+.samples button,
+.example,
+button.example {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(100, 255, 218, 0.18) !important;
+  border-radius: 999px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.7rem !important;
+  padding: 0.4rem 0.8rem !important;
+  transition: var(--transition) !important;
+}
+
+.samples button:hover,
+.example:hover,
+button.example:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  background: var(--accent-tint) !important;
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-tertiary) var(--bg-primary);
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Compact layout for portfolio iframe (~400x600) */
+.main,
+.wrap,
+.contain,
+.fill-height,
+.gap {
+  gap: 0.6rem !important;
+}
+
+.panel,
+.block {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.55rem 0.85rem !important;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+/* Loading / progress accents */
+.progress-bar,
+.progress-level {
+  background: var(--accent) !important;
+}
+
+.generating,
+.pending {
+  border-color: rgba(100, 255, 218, 0.25) !important;
+}
+
+/* Mobile / tiny iframe polish */
+@media (max-width: 480px) {
+  .ns-header {
+    padding: 0.85rem 0.9rem 0.65rem;
+  }
+
+  .ns-title {
+    font-size: 1.05rem;
+  }
+
+  .ns-subtitle {
+    font-size: 0.75rem;
+  }
+}

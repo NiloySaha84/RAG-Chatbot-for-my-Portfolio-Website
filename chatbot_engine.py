@@ -383,9 +383,43 @@ def run_checker(text: str) -> bool:
 
     return bool(data.get("allow") or data.get("ALLOW"))
 
+def _normalize_history(history) -> list[tuple[str, str]]:
+    """Support Gradio tuples history and openai-style messages history."""
+    if not history:
+        return []
+
+    if isinstance(history[0], dict):
+        pairs: list[tuple[str, str]] = []
+        pending_user = None
+        for item in history:
+            role = item.get("role")
+            content = item.get("content") or ""
+            if isinstance(content, list):
+                content = " ".join(
+                    part.get("text", "") if isinstance(part, dict) else str(part)
+                    for part in content
+                )
+            content = str(content)
+            if role == "user":
+                pending_user = content
+            elif role == "assistant" and pending_user is not None:
+                pairs.append((pending_user, content))
+                pending_user = None
+        return pairs
+
+    normalized = []
+    for turn in history:
+        if not turn or len(turn) < 2:
+            continue
+        user_msg, assistant_msg = turn[0], turn[1]
+        if user_msg is None:
+            continue
+        normalized.append((str(user_msg), str(assistant_msg or "")))
+    return normalized
+
+
 def answer_question(question: str, history=None, mal_query=None):
-    if history is None:
-        history = []
+    history = _normalize_history(history)
 
     compression_retriever, llm = get_components()
 
@@ -403,7 +437,8 @@ def answer_question(question: str, history=None, mal_query=None):
     if history:
         history_text = "\n".join(
             f"User: {user_msg}\nAssistant: {assistant_msg}"
-            for user_msg, assistant_msg in history[-3:] if user_msg not in mal_query
+            for user_msg, assistant_msg in history[-3:]
+            if user_msg not in mal_query
         )
 
         rewrite_prompt = f"""Given this conversation history:
