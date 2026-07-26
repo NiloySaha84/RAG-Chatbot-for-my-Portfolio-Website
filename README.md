@@ -11,15 +11,17 @@ Instead of making recruiters and visitors click through sections one by one, I w
 
 The chatbot answers from my own portfolio knowledge base, not from generic internet knowledge. That was the main goal: make the experience interactive while keeping it grounded, accurate, and hard to manipulate.
 
+**Live:** [https://myportfoliobot.duckdns.org/gradio](https://myportfoliobot.duckdns.org/gradio) — embedded in my [portfolio site](https://niloy-saha84-github-io.vercel.app/) via an iframe popup.
+
 ## What This Project Is
 
 This is a RAG-based portfolio chatbot built with:
 
 - `FastAPI` for the backend
-- `Gradio` for the chat interface
+- `Gradio` for the chat interface (custom-themed to match my portfolio)
 - `Chroma` as the vector store
 - `HuggingFaceEmbeddings` for semantic search
-- `OpenAI` for generation and guardrail checking
+- **NVIDIA NIM** for generation and guardrail checking
 - `FlashRank` for re-ranking
 
 I use it as an AI layer on top of my portfolio so people can explore my projects, education, experience, and skills in a more natural way.
@@ -41,8 +43,8 @@ That is what shaped most of the architecture of this project.
 - Reduce hallucinations by grounding responses in my own documents
 - Defend the system against prompt injection and jailbreak-style prompts
 - Improve retrieval quality with re-ranking instead of relying only on raw vector similarity
-- Keep the app simple enough to deploy on Vercel
-
+- Stream responses token-by-token for a better chat experience
+- Deploy as a persistent service that can be embedded in my portfolio site
 
 ## How It Works
 
@@ -54,6 +56,8 @@ I load data from `knowledge-base/`:
 
 - my resume from PDF files in `knowledge-base/Resume/`
 - project descriptions from markdown files in `knowledge-base/Projects/`
+
+Project READMEs are synced from my GitHub account using `scripts/sync_github_readmes.py`, which pulls fresh READMEs and replaces the old ones before each sync.
 
 This makes the chatbot answer from my actual portfolio material rather than a manually hardcoded FAQ.
 
@@ -72,7 +76,7 @@ I embed the chunks with:
 
 - `sentence-transformers/all-MiniLM-L6-v2`
 
-Then I store them in Chroma so the app can reuse a persistent vector database instead of rebuilding everything every time.
+Then I store them in Chroma (`chroma_db/`) so the app can reuse a persistent vector database instead of rebuilding everything every time.
 
 ### 4. Retrieval
 
@@ -101,6 +105,19 @@ The final response is generated with a strict system prompt that keeps the assis
 - concise and structured
 - honest when the answer is not available
 
+Responses are **streamed** token-by-token through the NVIDIA API so users see the answer appear in real time instead of waiting for the full completion.
+
+## Models
+
+I run inference through the **NVIDIA NIM API** (OpenAI-compatible endpoint) instead of calling OpenAI directly. This keeps generation fast and lets me use different models for different jobs.
+
+| Role | Default model | Env var |
+|------|---------------|---------|
+| Main answer generation | `meta/llama-4-maverick-17b-128e-instruct` | `NVIDIA_MODEL` |
+| Jailbreak guardrail | `meta/llama-3.2-3b-instruct` | `GUARDRAIL_MODEL` |
+
+Using a smaller, dedicated model for the guardrail keeps security checks cheap and fast, while the main model handles the heavier answer generation and follow-up query rewriting.
+
 ## How I Secured It Against Jailbreaking
 
 This was one of the parts I cared about most.
@@ -109,7 +126,8 @@ I did not want a portfolio chatbot that could be easily pushed into ignoring ins
 
 ### My jailbreak-defense strategy
 
-- I run a separate security classification step before answering.
+- I run a separate security classification step **before** retrieval or answer generation.
+- The guardrail uses its **own model** (`GUARDRAIL_MODEL`), not the main answer model.
 - I use a dedicated `CHECKER_PROMPT` that tells the model to detect:
   - prompt injection
   - role override attempts
@@ -122,7 +140,7 @@ I did not want a portfolio chatbot that could be easily pushed into ignoring ins
   - allow / block
   - reason
   - category
-- If the checker output is malformed or cannot be parsed, the request is blocked by default.
+- If the checker output is malformed or cannot be parsed (including JSON wrapped in markdown fences), the request is **blocked by default**.
 - If a message is blocked, the assistant returns a fixed refusal response instead of partially complying.
 
 ### What this protects against
@@ -188,7 +206,9 @@ It exposes:
 - `GET /health` for a health check
 - `GET /gradio` for the chat interface
 
-This gives me a simple backend plus a ready-to-use UI layer without having to build a custom frontend for the chatbot itself.
+The Gradio UI is styled to match my portfolio site — navy background (`#0a192f`), teal accent (`#64ffda`), Inter + JetBrains Mono fonts, and a layout tuned for the iframe popup on my portfolio. Custom styles live in `static/gradio_theme.css`.
+
+Gradio runs with `demo.queue()` so streaming responses work correctly in the chat interface.
 
 ## Local Setup
 
@@ -196,16 +216,26 @@ This gives me a simple backend plus a ready-to-use UI layer without having to bu
 
 - Python `3.12+`
 - `uv` or `pip`
-- an `OPENAI_API_KEY`
+- an `NVIDIA_API_KEY` ([NVIDIA NIM](https://build.nvidia.com/))
 
 ### Environment Variables
 
 Create a `.env` file:
 
 ```env
-OPENAI_API_KEY=your_openai_api_key
-VECTOR_DB_NAME=vector_db
+NVIDIA_API_KEY=your_nvidia_api_key
+NVIDIA_MODEL=meta/llama-4-maverick-17b-128e-instruct
+GUARDRAIL_MODEL=meta/llama-3.2-3b-instruct
+NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+VECTOR_DB_NAME=chroma_db
 REBUILD_VECTOR_DB=false
+```
+
+Optional for syncing GitHub READMEs into the knowledge base:
+
+```env
+GITHUB_TOKEN=your_github_token
+GITHUB_USERNAME=NiloySaha84
 ```
 
 ### Install Dependencies
@@ -234,40 +264,84 @@ Then open:
 - `http://127.0.0.1:8000/health`
 - `http://127.0.0.1:8000/gradio`
 
-## Vercel Deployment
+## Keeping the Knowledge Base Updated
 
-I plan to deploy this app on Vercel as part of my portfolio ecosystem.
+To pull fresh READMEs from my GitHub repos into `knowledge-base/Projects/`:
 
-### Deployment flow
+```bash
+uv run python scripts/sync_github_readmes.py
+```
 
-1. Push the repository to GitHub
-2. Import the repository into Vercel
-3. Configure the required environment variables
-4. Deploy the FastAPI app
-5. Expose the chatbot through the deployed route
+The script deletes existing project markdown files first, then downloads the latest README for each repo. After syncing, rebuild the vector DB:
 
-### Required environment variables on Vercel
+```bash
+REBUILD_VECTOR_DB=true uv run python -c "from chatbot_engine import build_vectorstore; build_vectorstore()"
+```
 
-- `OPENAI_API_KEY`
-- `VECTOR_DB_NAME`
-- `REBUILD_VECTOR_DB`
+## Deployment (GCP VM + Docker)
 
-### Important note for Vercel
+I deploy this on a GCP `e2-medium` VM alongside my other projects. Vercel is great for static frontends, but this app needs a persistent Python process, local Chroma storage, and ML dependencies — so a VM with Docker is a better fit.
 
-The chatbot currently uses a local Chroma persistence directory. That works well in local development, but serverless deployments can have ephemeral file systems.
+### Architecture
 
-For a more production-ready Vercel deployment, I may do one of the following:
+```
+Portfolio site (Vercel)
+  └── iframe → https://myportfoliobot.duckdns.org/gradio
+                    └── Caddy (HTTPS, reverse proxy)
+                          └── Docker container (portfolio-bot :8000)
+```
 
-- prebuild and package the vector data with deployment
-- switch to a managed vector database
-- move retrieval storage to a more deployment-friendly persistent layer
+### Deploy with the script
+
+On the VM:
+
+```bash
+bash scripts/deploy_gcp.sh
+```
+
+The script:
+
+1. Installs Docker if needed
+2. Creates a 2 GB swapfile (OOM protection on a 4 GB VM)
+3. Clones or pulls the repo
+4. Builds the Docker image (CPU-only PyTorch, pre-baked embedding + reranker models)
+5. Runs the container with memory limits and auto-restart
+6. Runs a health check
+
+### Required environment variables on the VM
+
+Create `~/portfolioBot/.env`:
+
+```env
+NVIDIA_API_KEY=your_nvidia_api_key
+REBUILD_VECTOR_DB=false
+```
+
+### Docker details
+
+- `Dockerfile` — Python 3.12 slim, CPU-only torch, models baked in at build time
+- `requirements-deploy.txt` — pinned production dependencies
+- Prebuilt `chroma_db/` is copied into the image so the vector DB does not rebuild at startup
+- Container runs with `--memory=2g --memory-swap=3g` to stay safe alongside other services on the VM
+
+### Caddy (HTTPS)
+
+Caddy on the VM terminates TLS for `myportfoliobot.duckdns.org` and reverse-proxies to `localhost:8000`. The config also sets `frame-ancestors` headers so the chatbot can be embedded in my Vercel portfolio iframe.
 
 ## Files I Used During Development
 
-- `chatbot_engine.py` contains the main production logic
-- `chatbot.ipynb` is where I experimented with prompts, retrieval, and re-ranking ideas
-- `app.py` mounts the chat UI into a FastAPI app
-- `knowledge-base/` contains the source data the bot is allowed to use
+| File | Purpose |
+|------|---------|
+| `chatbot_engine.py` | Main RAG pipeline, guardrail, streaming, vector DB |
+| `app.py` | FastAPI app + themed Gradio chat interface |
+| `static/gradio_theme.css` | Portfolio-matching UI styles |
+| `chatbot.ipynb` | Prompt, retrieval, and re-ranking experiments |
+| `knowledge-base/` | Resume PDFs and project READMEs |
+| `chroma_db/` | Prebuilt Chroma vector store |
+| `scripts/sync_github_readmes.py` | Sync GitHub READMEs into the knowledge base |
+| `scripts/deploy_gcp.sh` | One-command GCP VM deployment |
+| `Dockerfile` | Production container image |
+| `requirements-deploy.txt` | Pinned deps for Docker builds |
 
 ## What I Like Most About This Project
 
@@ -276,7 +350,8 @@ This project is a good representation of how I think about AI engineering:
 - build something useful
 - keep it grounded in real data
 - improve quality with better retrieval
-- add guardrails early
+- add guardrails early with a dedicated security model
+- stream responses for a real chat feel
 - design it for deployment, not just experimentation
 
 For me, the most meaningful parts were not just making the bot answer questions, but making it answer well and making it resist misuse.
