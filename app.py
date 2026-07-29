@@ -135,7 +135,7 @@ demo = gr.ChatInterface(
         type="messages",
     ),
     textbox=gr.Textbox(
-        placeholder="Ask about projects, skills, experience…",
+        placeholder="Ask about projects or skills…",
         autofocus=False,
     ),
     theme=theme,

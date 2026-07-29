@@ -113,10 +113,10 @@ I run inference through the **NVIDIA NIM API** (OpenAI-compatible endpoint) inst
 
 | Role | Default model | Env var |
 |------|---------------|---------|
-| Main answer generation | `meta/llama-4-maverick-17b-128e-instruct` | `NVIDIA_MODEL` |
+| Main answer generation | `openai/gpt-oss-20b` (~20B) | `NVIDIA_MODEL` |
 | Jailbreak guardrail | `meta/llama-3.2-3b-instruct` | `GUARDRAIL_MODEL` |
 
-Using a smaller, dedicated model for the guardrail keeps security checks cheap and fast, while the main model handles the heavier answer generation and follow-up query rewriting.
+Using a smaller, dedicated model for the guardrail keeps security checks cheap and fast, while a ~20B main model handles answer generation and follow-up query rewriting without the latency of 70B-class models.
 
 ## How I Secured It Against Jailbreaking
 
@@ -224,7 +224,7 @@ Create a `.env` file:
 
 ```env
 NVIDIA_API_KEY=your_nvidia_api_key
-NVIDIA_MODEL=meta/llama-4-maverick-17b-128e-instruct
+NVIDIA_MODEL=openai/gpt-oss-20b
 GUARDRAIL_MODEL=meta/llama-3.2-3b-instruct
 NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
 VECTOR_DB_NAME=chroma_db

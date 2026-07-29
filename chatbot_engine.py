@@ -26,7 +26,7 @@ if not hasattr(flashrank_rerank_module, "Ranker"):
 
 load_dotenv(override=True)
 
-MODEL = os.getenv("NVIDIA_MODEL", "meta/llama-4-maverick-17b-128e-instruct")
+MODEL = os.getenv("NVIDIA_MODEL", "openai/gpt-oss-20b")
 GUARDRAIL_MODEL = os.getenv("GUARDRAIL_MODEL", "meta/llama-3.2-3b-instruct")
 NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
 DB_NAME = os.getenv("VECTOR_DB_NAME", "chroma_db")

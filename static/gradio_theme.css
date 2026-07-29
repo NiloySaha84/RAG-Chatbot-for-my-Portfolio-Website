@@ -15,6 +15,8 @@
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
   --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+  /* Gradio sizes bubble text from this var, not from .message */
+  --chatbot-text-size: 0.875rem;
 }
 
 html,
@@ -181,6 +183,8 @@ h1 {
 .block,
 .panel,
 .form,
+.styler,
+.gr-group,
 .wrap.default {
   background: transparent !important;
   border: none !important;
@@ -194,37 +198,138 @@ h1 {
   background: transparent !important;
 }
 
-.message-row .message,
-.message {
-  font-family: var(--font-sans) !important;
-  font-size: 0.875rem !important;
+/* Scroll container: one comfortable gutter, no stacked Gradio spacing */
+.bubble-wrap {
+  padding: 0.5rem 0.35rem 0.25rem !important;
+  overscroll-behavior: contain;
 }
 
-.message-row.bot-row .message,
+/* Single centred conversation column so lines stay readable on wide screens */
+.message-wrap {
+  width: 100% !important;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+  gap: 0.5rem;
+}
+
+/* Gradio spaces rows with large per-bubble margins; the column gap handles it */
+.message-row,
+.message-row.bubble,
+.message-row.panel,
+.bubble-wrap .container {
+  margin: 0 !important;
+}
+
+.message-row .message,
+.message {
+  margin: 0 !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.875rem !important;
+  line-height: 1.65 !important;
+  overflow-wrap: break-word;
+}
+
+.message-row.bubble.user-row {
+  max-width: 85% !important;
+}
+
+.message-row.bubble.bot-row {
+  max-width: 96% !important;
+}
+
 .bot {
   background: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
   border: 1px solid rgba(100, 255, 218, 0.12) !important;
   border-radius: 10px 10px 10px 4px !important;
+  padding: 0.55rem 0.8rem !important;
+  text-align: left !important;
 }
 
-.message-row.user-row .message,
 .user {
   background: rgba(100, 255, 218, 0.12) !important;
   color: var(--white) !important;
   border: 1px solid rgba(100, 255, 218, 0.3) !important;
   border-radius: 10px 10px 4px 10px !important;
+  padding: 0.55rem 0.8rem !important;
+}
+
+/* Gradio nests a second .message inside .bot/.user — one bubble outline only */
+.bot > .message,
+.user > .message,
+.message .message,
+.message.panel-full-width {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Gradio dims bot markdown to 80%, which reads as muddy on navy */
+.message-wrap .prose.chatbot.md,
+.message .prose {
+  opacity: 1 !important;
 }
 
 .prose,
 .prose p,
 .prose li {
   color: inherit !important;
-  line-height: 1.6 !important;
+  line-height: 1.65 !important;
+}
+
+/* Tight, even vertical rhythm inside a bubble */
+.message .prose > :first-child {
+  margin-top: 0 !important;
+}
+
+.message .prose > :last-child {
+  margin-bottom: 0 !important;
+}
+
+.message .prose p,
+.message-wrap > div p:not(:first-child) {
+  margin: 0 0 0.5em !important;
+}
+
+.message .prose ul,
+.message .prose ol {
+  margin: 0.4em 0 0.55em !important;
+  padding-left: 1.15rem !important;
+}
+
+.message .prose li {
+  margin: 0.15em 0 !important;
+}
+
+.message .prose li::marker {
+  color: var(--accent);
+}
+
+.message .prose h1,
+.message .prose h2,
+.message .prose h3,
+.message .prose h4 {
+  margin: 0.7em 0 0.3em !important;
+  color: var(--white) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+}
+
+.message .prose strong {
+  color: var(--white) !important;
+  font-weight: 600 !important;
+}
+
+.message .prose hr {
+  border-color: var(--bg-tertiary) !important;
+  margin: 0.7em 0 !important;
 }
 
 .prose a {
   color: var(--accent) !important;
+  overflow-wrap: anywhere;
 }
 
 .prose code,
@@ -234,12 +339,106 @@ h1 {
   color: var(--accent) !important;
   border-radius: 4px !important;
   padding: 0.1rem 0.3rem !important;
+  overflow-wrap: anywhere;
 }
 
 .prose pre {
   background: #020c1b !important;
   border: 1px solid var(--bg-tertiary) !important;
   border-radius: 8px !important;
+  margin: 0.5em 0 !important;
+  padding: 0.6rem 0.7rem !important;
+  overflow-x: auto;
+}
+
+.prose pre code,
+.message pre code {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  padding: 0 !important;
+  font-size: 0.78rem !important;
+  white-space: pre;
+}
+
+/* Tables scroll instead of stretching the bubble past the viewport */
+.message table {
+  display: block !important;
+  width: max-content !important;
+  max-width: 100% !important;
+  overflow-x: auto;
+  border-collapse: collapse !important;
+  margin: 0.5em 0 !important;
+  font-size: 0.78rem !important;
+}
+
+.message th,
+.message td {
+  padding: 0.3rem 0.5rem !important;
+}
+
+.message th {
+  color: var(--white) !important;
+  font-weight: 600 !important;
+}
+
+/* Message actions (copy/retry/delete): flat and recessed until hovered */
+.message-wrap .icon-button-wrapper,
+.message-buttons .icon-button-wrapper {
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.message-buttons {
+  margin: 0 !important;
+}
+
+/* Clear-chat button floats over the transcript, so keep it faint and readable */
+.icon-button-wrapper.top-panel {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--bg-tertiary) !important;
+  border-radius: 6px !important;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+.icon-button-wrapper.top-panel:hover {
+  opacity: 1;
+}
+
+.message-wrap:hover .icon-button-wrapper,
+.message-wrap .icon-button-wrapper:hover,
+.message-wrap .icon-button-wrapper:focus-within {
+  opacity: 1;
+}
+
+/* Narrow iframe / phone: wider bubbles, smaller gutters */
+@media (max-width: 520px) {
+  :root,
+  .gradio-container,
+  .dark {
+    --chatbot-text-size: 0.8125rem;
+  }
+
+  .bubble-wrap {
+    padding: 0.4rem 0.15rem 0.2rem !important;
+  }
+
+  .message-row.bubble.user-row {
+    max-width: 92% !important;
+  }
+
+  .message-row.bubble.bot-row {
+    max-width: 100% !important;
+  }
+
+  .message-row .message,
+  .message {
+    font-size: 0.8125rem !important;
+  }
 }
 
 /* Placeholder + example chips (rendered inside empty chat) */
@@ -251,6 +450,8 @@ h1 {
 .examples-container,
 .examples {
   gap: 0.4rem !important;
+  padding: 0.75rem !important;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
 }
 
 .example,
@@ -301,6 +502,14 @@ textarea::placeholder {
   opacity: 0.8;
 }
 
+/* Keep the composer aligned with the centred message column */
+.block:has(.input-container) {
+  width: 100% !important;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+  padding: 0.25rem 0 0.35rem !important;
+}
+
 /* Input container that wraps the textbox */
 .input-container {
   background: var(--bg-secondary) !important;
@@ -317,6 +526,10 @@ textarea::placeholder {
   border: none !important;
   box-shadow: none !important;
   background: transparent !important;
+  padding: 0.5rem 0.6rem !important;
+  line-height: 1.5 !important;
+  max-height: 8rem !important;
+  overflow-y: auto !important;
 }
 
 .input-container textarea:focus {
